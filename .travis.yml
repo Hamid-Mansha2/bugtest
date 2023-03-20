@@ -1,0 +1,81 @@
+dist: focal
+language: scala
+jdk: openjdk17
+scala:
+  - 2.13.9
+git:
+  depth: false
+before_install:
+  - rvm reload
+  - rvm install 3.1.2
+before_cache:
+  - rm -fv $HOME/.ivy2/.sbt.ivy.lock
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+  - find $HOME/.sbt        -name "*.lock"               -print -delete
+
+services:
+  - postgresql
+  - redis-server
+addons:
+  postgresql: "12"
+  apt:
+    packages:
+      - postgresql-12
+      - postgresql-client-12
+env:
+  global:
+    - DB_NAME=monitoringdatareview
+    - DB_USER=postgres
+    - DB_PASSWORD=password
+    - DB_PORT=5433
+    - PRIVATE_KEY=FAKE-IT-TIL-YOU-MAKE-IT
+    - DALTON_URL=https://dalton-sandbox.imedidata.net
+    - MAUTH_BASE_URL=https://mauth-sandbox.imedidata.net
+    - APOLLO_BASE_URL=https://apollo-sandbox.imedidata.net
+    - DALTON_URL=https://dalton-sandbox.imedidata.net
+    - DB_CONNECTION_TIMEOUT=30000
+    - IMEDIDATA_BASE_URL=imedidata.net
+    - MAUTH_BASE_URL=https://mauth-sandbox.imedidata.net
+    - MAUTH_TTL=300
+    - MDR_APP_UUID=182488fa-3322-4bf2-88ff-2e82264d241b
+    - MDR_CONFIG_TYPE_UUID=5bc19fea-b6a8-4865-827d-b607efc6439d
+    - PLINTH_URL=https://plinth-sandbox.imedidata.net
+    - SMUI_APP_OID=site_monitoring
+    - STAGE=sandbox
+    - SUBJECTS_BASE_URL=https://subjects-sandbox.imedidata.net
+    - ZEUS_BASE_URL=https://zeus-sandbox.imedidata.net
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt
+    - $HOME/.rvm
+    - $HOME/.nvm
+    - $HOME/.cache/coursier
+
+before_script:
+  - git config user.email "builds@travis-ci.com"
+  - git config user.name "TravisCI"
+  - psql -p 5433 -c "CREATE DATABASE ${DB_NAME} WITH OWNER = ${DB_USER};"
+  - psql -p 5433 -c "ALTER USER ${DB_USER} PASSWORD '${DB_PASSWORD}';"
+
+stages:
+  - Compilation and OpenApi validation
+  - Test Suite
+  - publish_artifacts
+
+jobs:
+  include:
+    - stage: Compilation and OpenApi validation
+      name: "Compile & OpenApi validate"
+      script:
+       - sbt clean compile test:compile
+       - bundle install
+       - bundle exec hammertime lint doc/contracts/openapi.yaml
+    - stage: Test Suite
+      name: "Test Suite"
+      script:
+        - sbt 'runMain com.mdsol.mdr.Flyway; test'
+    - stage: publish_artifacts
+      name: "Publish Artifacts"
+      if: type != pull_request AND branch = develop
+      script: .travis/build.sh publish
