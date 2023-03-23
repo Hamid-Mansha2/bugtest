@@ -22,28 +22,7 @@ addons:
     packages:
       - postgresql-12
       - postgresql-client-12
-env:
-  global:
-    - DB_NAME=monitoringdatareview
-    - DB_USER=postgres
-    - DB_PASSWORD=password
-    - DB_PORT=5433
-    - PRIVATE_KEY=FAKE-IT-TIL-YOU-MAKE-IT
-    - DALTON_URL=https://dalton-sandbox.imedidata.net
-    - MAUTH_BASE_URL=https://mauth-sandbox.imedidata.net
-    - APOLLO_BASE_URL=https://apollo-sandbox.imedidata.net
-    - DALTON_URL=https://dalton-sandbox.imedidata.net
-    - DB_CONNECTION_TIMEOUT=30000
-    - IMEDIDATA_BASE_URL=imedidata.net
-    - MAUTH_BASE_URL=https://mauth-sandbox.imedidata.net
-    - MAUTH_TTL=300
-    - MDR_APP_UUID=182488fa-3322-4bf2-88ff-2e82264d241b
-    - MDR_CONFIG_TYPE_UUID=5bc19fea-b6a8-4865-827d-b607efc6439d
-    - PLINTH_URL=https://plinth-sandbox.imedidata.net
-    - SMUI_APP_OID=site_monitoring
-    - STAGE=sandbox
-    - SUBJECTS_BASE_URL=https://subjects-sandbox.imedidata.net
-    - ZEUS_BASE_URL=https://zeus-sandbox.imedidata.net
+
 cache:
   directories:
     - $HOME/.ivy2/cache
